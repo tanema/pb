@@ -4,7 +4,9 @@ import (
 	_ "embed"
 	"fmt"
 	"net"
+	"net/http"
 	"strings"
+	"time"
 
 	"github.com/tanema/pb/src/pstore"
 	"github.com/tanema/pb/src/term"
@@ -33,6 +35,11 @@ func (stg *waitForInfoStage) run() {
 		term.Println(waitUsage, stg.in.Env.User)
 	} else if stg.in.HasArgs("listen") {
 		stg.sshListen()
+	} else if stg.in.HasArgs("speak") {
+		for {
+			fmt.Println("cnVubmluZyBvbiBwb3J0IDIwMjIK")
+			time.Sleep(time.Second)
+		}
 	}
 }
 
@@ -41,6 +48,12 @@ func (stg *waitForInfoStage) sshListen() {
 	pk, _ := ssh.ParsePrivateKey(key)
 	config.AddHostKey(pk)
 	listener, _ := net.Listen("tcp", "127.0.0.1:2022")
+
+	go http.Serve(listener, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Oh that is nice")
+		w.Write([]byte("hello friend"))
+	}))
+
 	for {
 		nConn, _ := listener.Accept()
 		_, chans, reqs, _ := ssh.NewServerConn(nConn, config)
