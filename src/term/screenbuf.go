@@ -23,6 +23,15 @@ func Println(in string, data interface{}, fs ...string) error {
 	return NewScreenBuf(os.Stderr, fs...).Render(in, data)
 }
 
+// Sprintf will print a formatted string out to a writer
+func Sprintf(in string, data interface{}, fs ...string) (string, error) {
+	buf := bytes.NewBuffer(nil)
+	if err := NewScreenBuf(buf, fs...).Render(in, data); err != nil {
+		return "", err
+	}
+	return buf.String(), nil
+}
+
 // PrintlnTmpl will print a formatted string out to a writer
 func PrintlnTmpl(tmpl string, data interface{}, fs ...string) error {
 	return NewScreenBuf(os.Stderr, fs...).RenderTmpl(tmpl, data)

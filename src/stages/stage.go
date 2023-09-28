@@ -2,49 +2,56 @@ package stages
 
 import (
 	_ "embed"
-	"fmt"
 
+	"github.com/tanema/pb/src/artifacts"
 	"github.com/tanema/pb/src/pstore"
+	"github.com/tanema/pb/src/stages/start"
+	"github.com/tanema/pb/src/stages/wait"
 	"github.com/tanema/pb/src/term"
 )
 
 type (
-	stage        interface{ run() }
-	stageFactory = func(*term.Input, *pstore.DB) stage
+	Stage func(*term.Input, *pstore.DB) error
 )
 
 var (
-	//go:embed data/cowsay.tmpl
+	//go:embed default/cowsay.tmpl
 	cow string
-	//go:embed data/meow.tmpl
-	meow     string
-	handlers = map[string]stageFactory{
-		"start":       newStartStage,
-		"waitforinfo": newWaitForInfo,
+	//go:embed default/meow.tmpl
+	meow string
+	//go:embed default/milk.tmpl
+	milk     string
+	handlers = map[string]Stage{
+		"start":       start.Run,
+		"waitforinfo": wait.Run,
 	}
 )
 
-func addArtifact(db *pstore.DB, artf string) {
-	db.Set("artifacts", db.Get("artifacts")+artf+"\n")
-}
-
 // Run will find the current stage and run it
-func Run(in *term.Input, db *pstore.DB) {
+func Run(in *term.Input, db *pstore.DB) error {
+	artifacts.Setup(db)
+	db.Set("hint", "are you trying to cheat by looking at the data?")
 	if in.HasFlags("artifacts") {
-		fmt.Println(db.Get("artifacts"))
-		return
+		artifacts.Print(db)
 	} else if in.HasFlags("reset") {
-		db.Drop()
-	} else if in.HasFlags("moo") {
+		for _, key := range db.Keys() {
+			if key != "artifacts" {
+				if err := db.Del(key); err != nil {
+					return err
+				}
+			}
+		}
+	} else if in.HasOpt("moo", "cow") {
 		term.Println(cow, nil)
-		return
-	} else if in.HasFlags("meow") {
+	} else if in.HasOpt("meow", "cat", "kitty") {
 		term.Println(meow, nil)
-		return
-	}
-	if stage, ok := handlers[db.Get("stage")]; ok {
-		stage(in, db).run()
+	} else if in.HasOpt("milk", "cheese") {
+		term.Println(milk, nil)
 	} else {
-		handlers["start"](in, db).run()
+		if db.Get("stage") == "" {
+			db.Set("stage", "start")
+		}
+		return handlers[db.Get("stage")](in, db)
 	}
+	return nil
 }

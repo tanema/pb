@@ -10,11 +10,12 @@ Stage 2 Waiting For info
 - ctrl-T sig info
 - http server
 - ssh server
-- wget image?
 
 Stage 3
 - lisp interpreter
 
+- rename the binary
+- wget image?
 - shell completion?
 - echo output of cmd back into stdin
 - output photo with metadata
@@ -26,6 +27,7 @@ Stage 3
 - encoded output
   - base64
   - rot13
+  - hex
 
 Probably wont work
 - cat out the executable?

@@ -1,0 +1,16 @@
+.Dd 2023
+.Dt PB 1
+.
+.Sh NAME
+.Nm pb
+.Nd the command line puzzle box
+.
+.Sh DESCRIPTION
+So you think you are clever now because you got to the second step right?
+.
+.Sh OPTIONS
+.Nm --listen
+.Nd Let me listen to what you have to say.
+
+.Nm --speak
+.Nd You listen to what I have to say

@@ -47,6 +47,11 @@ func (in *Input) None() bool {
 	return len(in.Flags) == 0 && len(in.Args) == 0 && !in.HasPipe
 }
 
+// HasOpt will check if the cli was provided a flag OR arg that matches
+func (in *Input) HasOpt(args ...string) bool {
+	return in.HasArgs(args...) || in.HasFlags(args...)
+}
+
 // HasFlags will return true if one of the flags was used
 func (in *Input) HasFlags(flags ...string) bool {
 	for _, flag := range flags {

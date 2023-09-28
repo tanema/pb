@@ -1,4 +1,4 @@
-.Dd 2022
+.Dd 2023
 .Dt PB 1
 .
 .Sh NAME
@@ -7,9 +7,7 @@
 .
 .Sh DESCRIPTION
 Ah so you know unix! Very clever. I wonder what you will find here. This may or may not change.
-.
+
 .Sh OPTIONS
-.Bl -tag -width 6n
-.
-.It Fl -candy
-Super secret flag that you were not supposed to find
+.Nm --candy
+.Nd Super secret flag that you were not supposed to find
