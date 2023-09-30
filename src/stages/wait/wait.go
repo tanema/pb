@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/signal"
 	"strings"
 	"syscall"
 
@@ -71,17 +70,12 @@ To authenitcate run the login command.
 
 `, handleSSH(db))
 
-	return srv.ListenAndServe("127.0.0.1:2023")
-}
-
-func sigInfo() {
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.Signal(29))
-	for {
-		<-c
+	go util.OnSignal(func(sig os.Signal) {
 		fmt.Println("That was clever! This is a shortcut!")
 		fmt.Println(passwdMsg)
-	}
+	}, syscall.Signal(29))
+
+	return srv.ListenAndServe("127.0.0.1:2023")
 }
 
 func handleSSH(db *pstore.DB) func(sshTerm io.Writer, cmd string) error {
@@ -91,8 +85,7 @@ func handleSSH(db *pstore.DB) func(sshTerm io.Writer, cmd string) error {
 		case "exit":
 			return errors.New("Goodbye")
 		case "ls", "list", "dir", "ll", "la":
-			rnd, _ := term.Sprintf(fileList, fakefiles)
-			sshTerm.Write([]byte(rnd))
+			util.WriteFmt(sshTerm, fileList, fakefiles)
 		case "login":
 			if len(cmdParts) == 1 {
 				fmt.Fprintln(sshTerm, "Usage: login [password]")
@@ -101,34 +94,34 @@ func handleSSH(db *pstore.DB) func(sshTerm io.Writer, cmd string) error {
 				fmt.Fprintln(sshTerm, "You have been authenticated. You are now on logged into stage 3")
 				os.Exit(0)
 			} else if cmdParts[1] == passHex {
-				fmt.Fprint(sshTerm, "such a curse to be so close, you could say that this password is hexed")
+				fmt.Fprintln(sshTerm, "such a curse to be so close, you could say that this password is hexed")
 			} else {
 				fmt.Fprintln(sshTerm, "Incorrect password. This incident will be reported to the authorities.")
 			}
 		case "su", "sudo":
-			fmt.Fprint(sshTerm, "We are confident, aren't we?\n")
+			fmt.Fprintln(sshTerm, "We are confident, aren't we?")
 		case "cat":
 			if len(cmdParts) == 1 {
-				fmt.Fprint(sshTerm, "huh?\n")
+				fmt.Fprintln(sshTerm, "huh?")
 			} else if len(cmdParts) >= 1 && strings.ToLower(cmdParts[1]) == "readme.md" {
 				fmt.Fprintf(sshTerm, "The password is %v\n", passHex)
 			} else {
-				fmt.Fprint(sshTerm, "meow?\n")
+				fmt.Fprintln(sshTerm, "meow?")
 			}
 		case "rm":
-			fmt.Fprint(sshTerm, "What exactly are you trying to acheive?\n")
+			fmt.Fprintln(sshTerm, "What exactly are you trying to acheive?")
 		case "help":
-			fmt.Fprint(sshTerm, "I think you need a secret word. Try looking around\n")
+			fmt.Fprintln(sshTerm, "Try looking around.")
 		case "look":
-			fmt.Fprint(sshTerm, "This is not monkey island, this is a computer. Have you tried looking for INFO\n")
+			fmt.Fprintln(sshTerm, "This is not monkey island, this is a computer. Have you tried looking for INFO")
 		case "hello", "hi":
-			fmt.Fprint(sshTerm, "Yes, hello again.\n")
+			fmt.Fprintln(sshTerm, "Yes, hello again.")
 		case "2.14.98":
-			fmt.Fprint(sshTerm, "nope that is just a random number.\n")
+			fmt.Fprintln(sshTerm, "nope that is just a random number.")
 		case "secret":
-			fmt.Fprint(sshTerm, "not like that.\n")
+			fmt.Fprintln(sshTerm, "not like that.")
 		default:
-			fmt.Fprint(sshTerm, "I have no idea what you are trying to say.\n")
+			fmt.Fprintf(sshTerm, "unknown command %v", cmdParts[0])
 		}
 		return nil
 	}

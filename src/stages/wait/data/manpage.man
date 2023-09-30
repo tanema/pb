@@ -1,5 +1,5 @@
 .Dd 2023
-.Dt PB 1
+.Dt PB 2
 .
 .Sh NAME
 .Nm pb

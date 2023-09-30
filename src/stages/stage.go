@@ -5,6 +5,7 @@ import (
 
 	"github.com/tanema/pb/src/artifacts"
 	"github.com/tanema/pb/src/pstore"
+	"github.com/tanema/pb/src/stages/lisp"
 	"github.com/tanema/pb/src/stages/start"
 	"github.com/tanema/pb/src/stages/wait"
 	"github.com/tanema/pb/src/term"
@@ -24,6 +25,7 @@ var (
 	handlers = map[string]Stage{
 		"start":       start.Run,
 		"waitforinfo": wait.Run,
+		"lisp":        lisp.Run,
 	}
 )
 

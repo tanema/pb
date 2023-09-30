@@ -3,7 +3,6 @@ package pstore
 import (
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -26,20 +25,8 @@ func New(appName, filename string) (*DB, error) {
 	if err := os.MkdirAll(configDir, 0755); err != nil {
 		return nil, err
 	}
-	filename = filepath.Join(configDir, filename)
-	if info, err := os.Stat(filename); os.IsNotExist(err) {
-		file, err := os.Create(filename)
-		if err != nil {
-			return nil, err
-		}
-		file.Close()
-	} else if err != nil {
-		return nil, err
-	} else if info.IsDir() {
-		return nil, fmt.Errorf("cannot create db out of a directory")
-	}
 	db := &DB{
-		filename: filename,
+		filename: filepath.Join(configDir, filename),
 		flock:    fslock.New(filename),
 		data:     map[string]string{},
 	}
@@ -47,7 +34,9 @@ func New(appName, filename string) (*DB, error) {
 }
 
 func (db *DB) read() error {
-	if file, err := os.Open(db.filename); err != nil {
+	if _, err := os.Stat(db.filename); os.IsNotExist(err) {
+		return nil
+	} else if file, err := os.Open(db.filename); err != nil {
 		return err
 	} else if byteData, err := io.ReadAll(file); err != nil {
 	} else if rawData, err := base64.StdEncoding.DecodeString(string(byteData)); err != nil {
@@ -63,7 +52,7 @@ func (db *DB) read() error {
 }
 
 func (db *DB) commit() error {
-	if file, err := os.OpenFile(db.filename, os.O_WRONLY, 0755); err != nil {
+	if file, err := os.OpenFile(db.filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755); err != nil {
 	} else if rawData, err := json.Marshal(db.data); err != nil {
 		return err
 	} else if _, err := file.WriteString(base64.StdEncoding.EncodeToString(rawData)); err != nil {

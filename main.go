@@ -12,7 +12,10 @@ import (
 func main() {
 	in := term.ParseInput()
 	if db, err := pstore.New("pb", ".data"); err != nil {
-		fmt.Println("There was a problem dipping my toe into your system. I cannot work like this.")
+		fmt.Println("There was a problem. I cannot work like this.")
+		if in.HasFlags("V") {
+			fmt.Println(err)
+		}
 		os.Exit(1)
 	} else if err := stages.Run(in, db); err != nil {
 		fmt.Fprintln(os.Stderr, err)

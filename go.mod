@@ -3,6 +3,7 @@ module github.com/tanema/pb
 go 1.20
 
 require (
+	github.com/chzyer/readline v1.5.1
 	github.com/juju/fslock v0.0.0-20160525022230-4d5c94c67b4b
 	github.com/mattn/go-isatty v0.0.14
 	github.com/sethvargo/go-envconfig v0.7.0

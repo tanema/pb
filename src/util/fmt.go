@@ -5,9 +5,15 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 
 	"github.com/tanema/pb/src/term"
 )
+
+func WriteFmt(out io.Writer, template string, data any) {
+	rnd, _ := term.Sprintf(template, data)
+	out.Write([]byte(rnd))
+}
 
 func ErrorFmt(tmpl string, data interface{}) error {
 	str, err := term.Sprintf(tmpl, data)
