@@ -1,8 +1,15 @@
 {{"pb"|bold}}     : The command line puzzle box
-{{"Stage 3"|bold}}: Merry-Go-Round
+{{"Stage 4"|bold}}: Merry-Go-Round
 ===============================
 
-To start over from the start, you can run `pb --reset`
+This stage will require some tricks. The puzzlebox is in disguise. It may talk
+to you differently depending on how you speak to it.
 
-{{"full disclosure:" | bold | black | White}}
-This app will make artifacts around your system. At anytime you can run, `pb --artifacts` to see what they are so that you can clean them up if you want to. As an example you can run `pb --artifacts | xargs rf --rf`
+{{"OPTIONS"|bold}}
+--help -h     print out the command line help
+--hint        print out a stage specific hint
+--reset       reset your progress to the beginning in case you want this
+              madness again.
+--artifacts   print out a list of the artifacts that this puzzle box has
+              created for clean up in case you're worried.
+              Example: pb --artifacts | xargs rf --rf

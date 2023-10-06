@@ -11,3 +11,16 @@ Ah so you know unix! Very clever. I wonder what you will find here. This may or 
 .Sh OPTIONS
 .Nm --candy
 .Nd Super secret flag that you were not supposed to find
+
+.Nm --help -h
+.Nd print out the command line help
+
+.Nm --hint
+.Nd print out a stage specific hint
+
+.Nm --reset
+.Nd reset your progress to the beginning in case you want this madness again.
+
+.Nm --artifacts
+.Nd print out a list of the artifacts that this puzzle box has created for
+    clean up in case you're worried. Example: pb --artifacts | xargs rf --rf

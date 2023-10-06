@@ -1,13 +1,12 @@
 .Dd 2023
-.Dt PB 4
+.Dt PB 5
 .
 .Sh NAME
 .Nm pb
 .Nd the command line puzzle box
 .
 .Sh DESCRIPTION
-This stage will require some tricks. The puzzlebox is in disguise. It may talk
-to you differently depending on how you speak to it.
+That is it for now! This is will sit here until more stages are added!
 
 .Sh OPTIONS
 .Nm --help -h

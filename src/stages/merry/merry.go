@@ -20,6 +20,9 @@ var (
 	key   []byte
 	hints = []string{
 		`ew it smells like ouroboros in here!`,
+		`https://media.giphy.com/media/TGKPVy5nvJQLxlxliH/giphy.gif`,
+		`have you tried stdin?`,
+		`how can you chain the puzzle box to itself?`,
 	}
 )
 
@@ -30,6 +33,8 @@ func Run(in *term.Input) error {
 		return util.ErrorFmt(usage, in.Env.User)
 	} else if in.HasOpt("hint") {
 		return util.DisplayHint(in, hints)
+	} else if !in.None() {
+		return util.ErrorFmt(`not like that, speak to me like we are on {{"Love is Blind"|magenta}}`, nil)
 	}
 
 	key, err := crypto.LoadKey()
@@ -44,10 +49,10 @@ func Run(in *term.Input) error {
 		util.SetStage(in, "next")
 	}
 
-	if !in.IsTTY {
-		return puke(in, key)
-	} else {
+	if len(in.Stdin) > 0 {
 		return consume(in, key)
+	} else {
+		return puke(in, key)
 	}
 }
 
@@ -62,17 +67,13 @@ func puke(in *term.Input, key *crypto.EncryptionKey) error {
 }
 
 func consume(in *term.Input, key *crypto.EncryptionKey) error {
-	if len(in.Stdin) > 0 {
-		cipherText, err := util.DecodeBase64(string(in.Stdin))
-		if err != nil {
-			return errors.New("this is not base64!")
-		}
-		text, err := key.Decrypt(cipherText)
-		if err != nil {
-			return errors.New("failed to decrypt the message! Are you sure you sent me the correct stuff?")
-		}
-		return errors.New(string(text))
+	cipherText, err := util.DecodeBase64(string(in.Stdin))
+	if err != nil {
+		return errors.New("this is not base64!")
 	}
-	fmt.Println("You have given me nothing to decrypt.")
-	return errors.New("try sending me something to munch on.")
+	text, err := key.Decrypt(cipherText)
+	if err != nil {
+		return errors.New("failed to decrypt the message! Are you sure you sent me the correct stuff?")
+	}
+	return errors.New(string(text))
 }

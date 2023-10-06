@@ -6,6 +6,7 @@ import (
 	"github.com/tanema/pb/src/artifacts"
 	"github.com/tanema/pb/src/stages/lisp"
 	"github.com/tanema/pb/src/stages/merry"
+	"github.com/tanema/pb/src/stages/next"
 	"github.com/tanema/pb/src/stages/start"
 	"github.com/tanema/pb/src/stages/wait"
 	"github.com/tanema/pb/src/term"
@@ -28,6 +29,7 @@ var (
 		"waitforinfo":  wait.Run,
 		"lisp":         lisp.Run,
 		"merrygoround": merry.Run,
+		"next":         next.Run,
 	}
 )
 

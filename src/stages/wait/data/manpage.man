@@ -14,3 +14,16 @@ So you think you are clever now because you got to the second step right?
 
 .Nm --speak
 .Nd You listen to what I have to say
+
+.Nm --help -h
+.Nd print out the command line help
+
+.Nm --hint
+.Nd print out a stage specific hint
+
+.Nm --reset
+.Nd reset your progress to the beginning in case you want this madness again.
+
+.Nm --artifacts
+.Nd print out a list of the artifacts that this puzzle box has created for
+    clean up in case you're worried. Example: pb --artifacts | xargs rf --rf
