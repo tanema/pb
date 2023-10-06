@@ -1,34 +1,42 @@
+# pb The command line puzzle box
+pb is the worlds first command line puzzle box. It is like a capture the flag
+challenge but without the need for a network connection. There are several
+stages to the puzzle that will challenge you in different ways
 
+## Current state
+There are currently 4 puzzles to make your way through
 
-Stage 1 HELP
-- bolded letters in output
-- something in the help text
-- sneeky man page entry
-- peek inside the data store
+| Stage | Title |
+|-------|-------|
+|1      | Stage 1 Let's go to the movies. |
+|2      | A Conversation |
+|3      | Speech Impediment |
+|4      | Merry-go-round |
 
-Stage 2 Waiting For info
-- ctrl-T sig info
-- http server
-- ssh server
+## Usage
+There are different usages for each stage so remember to check the help text for
+each stage using the `--help` flag. Also each stage has different hints if you
+get stuck so check those out with the `--hint` flag.
 
-Stage 3
-- lisp interpreter
+**full disclosure:**
+This app will make artifacts around your system and `pb` tracks these completely
+so that you can ensure that it is not doing anything funky and you can get rid
+of them. At anytime you can run, `pb --artifacts` to see what they are so that
+you can clean them up if you want to (or even check out what the contents are).
 
-- rename the binary
-- wget image?
-- shell completion?
-- echo output of cmd back into stdin
-- output photo with metadata
-- find output from inside $()
-- stdin to unlock something
-- run command that runs a small webserver that needs to take a request
-- sig info while outputting amessage
-- cat the ouput of the program back into stdin
-- encoded output
-  - base64
-  - rot13
-  - hex
+## Installation
 
-Probably wont work
-- cat out the executable?
-- can I do that trick where you change the extention and it works? jpeg, zip
+Run the installation script
+
+```bash
+>
+```
+
+Download binary and place on path:
+
+## Uninstall
+
+```bash
+> pb --artifacts | xargs rm -rf
+> rm $(which pb)
+```

@@ -27,6 +27,10 @@ func Base64(in string, data ...any) string {
 	return base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf(in, data...)))
 }
 
+func DecodeBase64(in string) ([]byte, error) {
+	return base64.StdEncoding.DecodeString(in)
+}
+
 func Hex(in string, data ...any) string {
 	return hex.EncodeToString([]byte(fmt.Sprintf(in, data...)))
 }

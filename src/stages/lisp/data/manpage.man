@@ -6,7 +6,10 @@
 .Nd the command line puzzle box
 .
 .Sh DESCRIPTION
-Do you think this area will give you more help?
+Do you think this area will give you more help? Unfortunately there is nothing
+here for you.
+
+Maybe look at https://lisp-lang.org/
 .
 .Sh OPTIONS
 .Nm --help

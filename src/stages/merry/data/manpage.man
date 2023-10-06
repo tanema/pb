@@ -1,0 +1,13 @@
+.Dd 2023
+.Dt PB 4
+.
+.Sh NAME
+.Nm pb
+.Nd the command line puzzle box
+.
+.Sh DESCRIPTION
+Ah so you know unix! Very clever. I wonder what you will find here. This may or may not change.
+
+.Sh OPTIONS
+.Nm --candy
+.Nd Super secret flag that you were not supposed to find

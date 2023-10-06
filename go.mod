@@ -9,6 +9,7 @@ require (
 	github.com/sethvargo/go-envconfig v0.7.0
 	github.com/stretchr/testify v1.8.0
 	golang.org/x/crypto v0.13.0
+	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
 	golang.org/x/term v0.12.0
 )
 

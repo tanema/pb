@@ -4,15 +4,16 @@ import (
 	_ "embed"
 
 	"github.com/tanema/pb/src/artifacts"
-	"github.com/tanema/pb/src/pstore"
 	"github.com/tanema/pb/src/stages/lisp"
+	"github.com/tanema/pb/src/stages/merry"
 	"github.com/tanema/pb/src/stages/start"
 	"github.com/tanema/pb/src/stages/wait"
 	"github.com/tanema/pb/src/term"
+	"github.com/tanema/pb/src/util"
 )
 
 type (
-	Stage func(*term.Input, *pstore.DB) error
+	Stage func(*term.Input) error
 )
 
 var (
@@ -23,22 +24,23 @@ var (
 	//go:embed default/milk.tmpl
 	milk     string
 	handlers = map[string]Stage{
-		"start":       start.Run,
-		"waitforinfo": wait.Run,
-		"lisp":        lisp.Run,
+		"start":        start.Run,
+		"waitforinfo":  wait.Run,
+		"lisp":         lisp.Run,
+		"merrygoround": merry.Run,
 	}
 )
 
 // Run will find the current stage and run it
-func Run(in *term.Input, db *pstore.DB) error {
-	artifacts.Setup(db)
-	db.Set("hint", "are you trying to cheat by looking at the data?")
+func Run(in *term.Input) error {
+	artifacts.Setup(in.DB)
+	in.DB.Set("hint", "are you trying to cheat by looking at the data?")
 	if in.HasFlags("artifacts") {
-		artifacts.Print(db)
+		artifacts.Print(in.DB)
 	} else if in.HasFlags("reset") {
-		for _, key := range db.Keys() {
+		for _, key := range in.DB.Keys() {
 			if key != "artifacts" {
-				if err := db.Del(key); err != nil {
+				if err := in.DB.Del(key); err != nil {
 					return err
 				}
 			}
@@ -50,10 +52,10 @@ func Run(in *term.Input, db *pstore.DB) error {
 	} else if in.HasOpt("milk", "cheese") {
 		term.Println(milk, nil)
 	} else {
-		if db.Get("stage") == "" {
-			db.Set("stage", "start")
+		if in.DB.Get("stage") == "" {
+			util.SetStage(in, "start")
 		}
-		return handlers[db.Get("stage")](in, db)
+		return handlers[in.DB.Get("stage")](in)
 	}
 	return nil
 }

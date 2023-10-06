@@ -10,7 +10,6 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/tanema/pb/src/pstore"
 	"github.com/tanema/pb/src/server"
 	"github.com/tanema/pb/src/term"
 	"github.com/tanema/pb/src/util"
@@ -41,23 +40,31 @@ var (
 	fakefiles = []fileItem{
 		{Owner: "timanema", Name: "readme.md", Day: 23, Month: "Sep", Time: "20:13", Size: "50mb"},
 	}
+	hints = []string{
+		`{{"base64 -d" | cyan}} will be your friend.`,
+		`you might need to use {{"ssh" | magenta}}.`,
+		`do you know linux tools like {{"ls" | cyan}} and {{"cat" | cyan}}?`,
+		`do you know what {{"SIGINFO" | yellow}} is?`,
+	}
 )
 
-func Run(in *term.Input, db *pstore.DB) error {
-	if err := util.InstallManpage(db, manPage); err != nil {
+func Run(in *term.Input) error {
+	if err := util.InstallManpage(in.DB, manPage); err != nil {
 		return err
-	} else if in.None() {
+	} else if in.None() || in.HasOpt("help", "h") {
 		return util.ErrorFmt(waitUsage, in.Env.User)
-	} else if in.HasArgs("listen") {
-		return listen(db)
-	} else if in.HasArgs("speak") {
+	} else if in.HasOpt("listen") {
+		return listen(in)
+	} else if in.HasOpt("speak") {
 		fmt.Print("I dont feel so good, I think I might puuu:")
 		return util.ErrorFmt("{{.|bold|green}}", portMsg)
+	} else if in.HasOpt("hint") {
+		return util.DisplayHint(in, hints)
 	}
 	return errors.New("no idea what you are trying to do")
 }
 
-func listen(db *pstore.DB) error {
+func listen(in *term.Input) error {
 	srv := server.New()
 	srv.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Oh that is nice, it's one way to connect with me. But sssshhh don't tell anyone")
@@ -68,7 +75,7 @@ func listen(db *pstore.DB) error {
 ============================================
 To authenitcate run the login command.
 
-`, handleSSH(db))
+`, handleSSH(in))
 
 	go util.OnSignal(func(sig os.Signal) {
 		fmt.Println("That was clever! This is a shortcut!")
@@ -78,7 +85,7 @@ To authenitcate run the login command.
 	return srv.ListenAndServe("127.0.0.1:2023")
 }
 
-func handleSSH(db *pstore.DB) func(sshTerm io.Writer, cmd string) error {
+func handleSSH(in *term.Input) func(sshTerm io.Writer, cmd string) error {
 	return func(sshTerm io.Writer, cmd string) error {
 		cmdParts := strings.Split(strings.TrimSpace(cmd), " ")
 		switch cmdParts[0] {
@@ -90,9 +97,8 @@ func handleSSH(db *pstore.DB) func(sshTerm io.Writer, cmd string) error {
 			if len(cmdParts) == 1 {
 				fmt.Fprintln(sshTerm, "Usage: login [password]")
 			} else if cmdParts[1] == password {
-				db.Set("stage", "lisp")
-				fmt.Fprintln(sshTerm, "You have been authenticated. You are now on logged into stage 3")
-				os.Exit(0)
+				term.Println(`You have been {{"authenticated"|cyan}}. You are now on logged into {{"stage 3"|red}}`, nil)
+				util.SetStage(in, "lisp")
 			} else if cmdParts[1] == passHex {
 				fmt.Fprintln(sshTerm, "such a curse to be so close, you could say that this password is hexed")
 			} else {

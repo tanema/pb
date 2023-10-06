@@ -7,15 +7,12 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
-
-	"github.com/juju/fslock"
 )
 
 // DB is the store for data in a simple file
 type DB struct {
 	filename string
 	data     map[string]string
-	flock    *fslock.Lock
 	mx       sync.Mutex
 }
 
@@ -27,7 +24,6 @@ func New(appName, filename string) (*DB, error) {
 	}
 	db := &DB{
 		filename: filepath.Join(configDir, filename),
-		flock:    fslock.New(filename),
 		data:     map[string]string{},
 	}
 	return db, db.read()
@@ -63,40 +59,26 @@ func (db *DB) commit() error {
 	return nil
 }
 
-func (db *DB) lock(readonly bool) {
-	db.mx.Lock()
-	if !readonly {
-		db.flock.Lock()
-	}
-}
-
-func (db *DB) unlock(readonly bool) {
-	db.mx.Unlock()
-	if !readonly {
-		db.flock.Unlock()
-	}
-}
-
 // Get will return the value for the key. If no value, an empty string will be
 // returned
 func (db *DB) Get(key string) string {
-	db.lock(true)
-	defer db.unlock(true)
+	db.mx.Lock()
+	defer db.mx.Unlock()
 	return db.data[key]
 }
 
 // Key will return true if the key exists in the store
 func (db *DB) Key(key string) bool {
-	db.lock(true)
-	defer db.unlock(true)
+	db.mx.Lock()
+	defer db.mx.Unlock()
 	_, ok := db.data[key]
 	return ok
 }
 
 // Keys will return all of the keys in the store
 func (db *DB) Keys() []string {
-	db.lock(true)
-	defer db.unlock(true)
+	db.mx.Lock()
+	defer db.mx.Unlock()
 	keys := []string{}
 	for key := range db.data {
 		keys = append(keys, key)
@@ -106,31 +88,31 @@ func (db *DB) Keys() []string {
 
 // Set will set the value with the key in the store
 func (db *DB) Set(key, val string) error {
-	db.lock(false)
-	defer db.unlock(false)
+	db.mx.Lock()
+	defer db.mx.Unlock()
 	db.data[key] = val
 	return db.commit()
 }
 
 // Del will remove the key/val from the store
 func (db *DB) Del(key string) error {
-	db.lock(false)
-	defer db.unlock(false)
+	db.mx.Lock()
+	defer db.mx.Unlock()
 	delete(db.data, key)
 	return db.commit()
 }
 
 // Drop will wipe the entire store
 func (db *DB) Drop() error {
-	db.lock(false)
-	defer db.unlock(false)
+	db.mx.Lock()
+	defer db.mx.Unlock()
 	db.data = map[string]string{}
 	return db.commit()
 }
 
 // Dump will return all the data in the store
 func (db *DB) Dump() map[string]string {
-	db.lock(true)
-	defer db.unlock(true)
+	db.mx.Lock()
+	defer db.mx.Unlock()
 	return db.data
 }
