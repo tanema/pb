@@ -26,17 +26,7 @@ you can clean them up if you want to (or even check out what the contents are).
 
 ## Installation
 
-Run the installation script
 
 ```bash
->
-```
-
-Download binary and place on path:
-
-## Uninstall
-
-```bash
-> pb --artifacts | xargs rm -rf
-> rm $(which pb)
+> go install github.com/tanema/pb
 ```
