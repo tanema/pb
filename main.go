@@ -10,7 +10,7 @@ import (
 
 func main() {
 	if in, err := term.ParseInput(); err != nil {
-		fmt.Println("There was a problem. I cannot work like this.")
+		fmt.Println("There was a problem.")
 		if in.HasFlags("V") {
 			fmt.Println(err)
 		}

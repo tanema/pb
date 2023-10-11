@@ -8,7 +8,7 @@ There are currently 4 puzzles to make your way through
 
 | Stage | Title |
 |-------|-------|
-|1      | Stage 1 Let's go to the movies. |
+|1      | Let's go to the movies. |
 |2      | A Conversation |
 |3      | Speech Impediment |
 |4      | Merry-go-round |
