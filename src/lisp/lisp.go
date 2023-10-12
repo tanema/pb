@@ -24,6 +24,9 @@ var (
 	ErrorUnderflow     = errors.New("underflow, expected end of list was not found")
 	ErrMalformedNumber = errors.New("malformed number")
 	stdenv             = map[string]any{
+		"nil":    nil,
+		"true":   true,
+		"false":  false,
 		"env":    env,
 		"doc":    doc,
 		"exit":   exit,
@@ -100,10 +103,6 @@ func read(tokens chan string) any {
 			return ErrorUnderflow
 		}
 		return forms
-	} else if token == "nil" {
-		return nil
-	} else if token == "true" || token == "false" {
-		return token == "true"
 	} else if match := numberPattern.MatchString(token); match {
 		n, err := strconv.ParseFloat(token, 64)
 		if err != nil {
@@ -127,16 +126,15 @@ func EvalForm(env map[string]any, object any) (any, error) {
 		} else if act, err := EvalForm(env, tobj[0]); err != nil {
 			return nil, err
 		} else if fn, ok := act.(func(env map[string]any, args []any) (any, error)); !ok {
-			return nil, fmt.Errorf("%v is not callable", act)
+			return nil, fmt.Errorf("'%v' is not callable", act)
 		} else {
 			return fn(env, tobj[1:])
 		}
 	case symbol:
-		val, ok := env[string(tobj)]
-		if !ok {
-			return nil, fmt.Errorf("undefined symbol '%v'", tobj)
+		if val, ok := env[string(tobj)]; ok {
+			return val, nil
 		}
-		return val, nil
+		return nil, fmt.Errorf("undefined symbol '%v'", tobj)
 	default:
 		return object, nil
 	}

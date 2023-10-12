@@ -33,7 +33,7 @@ func Run(in *term.Input) error {
 		return util.ErrorFmt(usage, in.Env.User)
 	} else if in.HasOpt("hint") {
 		return util.DisplayHint(in, hints)
-	} else if !in.None() {
+	} else if !in.None() && len(in.Stdin) == 0 {
 		return util.ErrorFmt(`not like that, speak to me like we are on {{"Love is Blind"|magenta}}`, nil)
 	}
 
