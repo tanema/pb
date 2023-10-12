@@ -27,29 +27,25 @@ var (
 )
 
 func Run(in *term.Input) error {
+	if !in.DB.Key("current_app_name") {
+		in.DB.Set("current_app_name", os.Args[0])
+	}
+
 	if err := util.InstallManpage(in.DB, manPage); err != nil {
 		return err
 	} else if in.HasOpt("help", "h") {
 		return util.ErrorFmt(usage, in.Env.User)
 	} else if in.HasOpt("hint") {
 		return util.DisplayHint(in, hints)
-	} else if !in.None() && len(in.Stdin) == 0 {
-		return util.ErrorFmt(`not like that, speak to me like we are on {{"Love is Blind"|magenta}}`, nil)
-	}
-
-	key, err := crypto.LoadKey()
-	if err != nil {
-		return err
-	}
-
-	if !in.DB.Key("current_app_name") {
-		in.DB.Set("current_app_name", os.Args[0])
 	} else if in.DB.Get("current_app_name") != os.Args[0] {
 		fmt.Println("you have done it! I have transformed! You have now completed the puzzle box.")
 		util.SetStage(in, "next")
-	}
-
-	if len(in.Stdin) > 0 {
+		return nil
+	} else if !in.None() && len(in.Stdin) == 0 {
+		return util.ErrorFmt(`not like that, speak to me like we are on {{"Love is Blind"|magenta}}`, nil)
+	} else if key, err := crypto.LoadKey(); err != nil {
+		return err
+	} else if len(in.Stdin) > 0 {
 		return consume(in, key)
 	} else {
 		return puke(in, key)
