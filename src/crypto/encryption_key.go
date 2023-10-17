@@ -8,9 +8,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
-	"os/user"
-	"path"
+
+	"github.com/tanema/pb/src/pstore"
+	"github.com/tanema/pb/src/util"
 )
 
 type (
@@ -31,12 +31,8 @@ type (
 	}
 )
 
-func LoadKey() (*EncryptionKey, error) {
-	if user, err := user.Current(); err != nil {
-		return nil, err
-	} else if err := os.MkdirAll(path.Join(user.HomeDir, ".config", "pb"), 0700); err != nil {
-		return nil, err
-	} else if result, err := readKey(path.Join(user.HomeDir, ".config", "pb", "masterKey")); err == nil {
+func LoadKey(db *pstore.DB) (*EncryptionKey, error) {
+	if result, err := readKey(db); err == nil {
 		return result, nil
 	} else {
 		rawKey := randomNBytes(32)
@@ -46,15 +42,15 @@ func LoadKey() (*EncryptionKey, error) {
 			EncKey: base64.RawURLEncoding.EncodeToString(rawKey),
 			RawKey: rawKey,
 		}
-		return key, writeKey(path.Join(user.HomeDir, ".config", "pb", "masterKey"), key)
+		return key, writeKey(db, key)
 	}
 }
 
-func readKey(keyPath string) (*EncryptionKey, error) {
+func readKey(db *pstore.DB) (*EncryptionKey, error) {
 	key := &EncryptionKey{}
-	if buf, err := os.ReadFile(keyPath); err != nil {
+	if data, err := util.DecodeBase64(db.Get("skeleton")); err != nil {
 		return nil, err
-	} else if err := json.Unmarshal(buf, &key); err != nil {
+	} else if err := json.Unmarshal(data, &key); err != nil {
 		return nil, err
 	} else if encKey, err := base64.RawURLEncoding.DecodeString(key.EncKey); err != nil {
 		return nil, err
@@ -64,13 +60,12 @@ func readKey(keyPath string) (*EncryptionKey, error) {
 	return key, nil
 }
 
-func writeKey(keypath string, key *EncryptionKey) error {
-	if buf, err := json.Marshal(key); err != nil {
-		return err
-	} else if err := os.WriteFile(keypath, buf, 0700); err != nil {
+func writeKey(db *pstore.DB, key *EncryptionKey) error {
+	buf, err := json.Marshal(key)
+	if err != nil {
 		return err
 	}
-	return nil
+	return db.Set("skeleton", util.Base64(string(buf)))
 }
 
 func randomNBytes(size int) []byte {

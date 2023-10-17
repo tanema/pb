@@ -1,15 +1,20 @@
 .Dd 2023
-.Dt PB 4
-.
+.Dt 0.1
+
 .Sh NAME
 .Nm pb
 .Nd the command line puzzle box
-.
+.Nd {{.Title}}
+
 .Sh DESCRIPTION
-This stage will require some tricks. The puzzlebox is in disguise. It may talk
-to you differently depending on how you speak to it.
+{{.Man}}
 
 .Sh OPTIONS
+{{- range $opt, $desc := .Options}}
+.Nm {{$opt}}
+.Nd {{$desc}}
+
+{{end -}}
 .Nm --help -h
 .Nd print out the command line help
 

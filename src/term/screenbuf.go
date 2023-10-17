@@ -5,6 +5,7 @@ package term
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"os"
 	"strings"
@@ -18,23 +19,29 @@ const (
 	defaultTermWidth = 80
 )
 
+func Fprint(out io.Writer, in string, data any) error {
+	return template.Must(template.New("screenbuf").Funcs(funcMap).Parse(in)).Execute(out, data)
+}
+
 // Println will print a formatted string out to a writer
 func Println(in string, data interface{}, fs ...string) error {
-	return NewScreenBuf(os.Stderr, fs...).Render(in, data)
+	return Fprint(os.Stderr, in+"\n", data)
+}
+
+// Println will print a formatted string out to a writer
+func Print(in string, data interface{}, fs ...string) error {
+	return Fprint(os.Stderr, in, data)
 }
 
 // Sprintf will print a formatted string out to a writer
-func Sprintf(in string, data interface{}, fs ...string) (string, error) {
+func Sprintf(in string, data interface{}, fs ...string) string {
 	buf := bytes.NewBuffer(nil)
-	if err := NewScreenBuf(buf, fs...).Render(in, data); err != nil {
-		return "", err
-	}
-	return buf.String(), nil
+	Fprint(buf, in, data)
+	return buf.String()
 }
 
-// PrintlnTmpl will print a formatted string out to a writer
-func PrintlnTmpl(tmpl string, data interface{}, fs ...string) error {
-	return NewScreenBuf(os.Stderr, fs...).RenderTmpl(tmpl, data)
+func Errorf(in string, data any) error {
+	return errors.New(Sprintf(in, data))
 }
 
 // ScreenBuf is a convenient way to write to terminal screens. It creates,

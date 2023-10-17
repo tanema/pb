@@ -5,23 +5,13 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"io"
+	"os"
+	"os/signal"
 
 	"github.com/tanema/pb/src/term"
 )
 
-func WriteFmt(out io.Writer, template string, data any) {
-	rnd, _ := term.Sprintf(template, data)
-	out.Write([]byte(rnd))
-}
-
-func ErrorFmt(tmpl string, data interface{}) error {
-	str, err := term.Sprintf(tmpl, data)
-	if err != nil {
-		return err
-	}
-	return errors.New(str)
-}
+var ErrorShowUsage = errors.New("showUsage")
 
 func Base64(in string, data ...any) string {
 	return base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf(in, data...)))
@@ -33,4 +23,18 @@ func DecodeBase64(in string) ([]byte, error) {
 
 func Hex(in string, data ...any) string {
 	return hex.EncodeToString([]byte(fmt.Sprintf(in, data...)))
+}
+
+func OnSignal(fn func(os.Signal), sig ...os.Signal) {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, sig...)
+	for {
+		fn(<-c)
+	}
+}
+
+func SetStage(in *term.Input, stage string) {
+	in.DB.Set("stage", stage)
+	in.DB.Set("hints", "0")
+	os.Exit(0)
 }

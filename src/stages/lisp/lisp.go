@@ -17,43 +17,60 @@ import (
 	"github.com/tanema/pb/src/util"
 )
 
+type LispStage struct {
+	in         *term.Input
+	man, usage string
+	hints      []string
+}
+
+const pinNumber = "4921"
+
 var (
-	//go:embed data/usage.tmpl
-	usage string
-	//go:embed data/manpage.man
-	manPage    string
 	order      = []string{"blue", "green", "yellow", "red"}
-	pinNumber  = "4921"
 	pinNumbers = strings.Split(pinNumber, "")
 	touched    = 0
-	hints      = []string{
-		`it's lisp, don't think too hard but think with prefixes`,
-		`check out the {{"(help)" | cyan}} output`,
-		`how could you combine {{"touch" | cyan}} calls into a single line of code?`,
-		`what does {{"touch" | cyan}} output? Is it the same every time?`,
-		`{{"(print (str 4) (str (+ 1 1)))" | cyan}}`,
-	}
 )
 
-func Run(in *term.Input) error {
+func New(in *term.Input) *LispStage {
+	return &LispStage{
+		in: in,
+		usage: `Okay, you are ready for something harder. Let's see what you can handle since you are such a computer person.
+
+This will challenge you to use programming with very little.
+
+Check out {{"https://lisp-lang.org/"|cyan|underline}} to get started.`,
+		man: `Do you think this area will give you more help? Unfortunately there is nothing
+here for you.
+
+Maybe look at https://lisp-lang.org/ `,
+		hints: []string{
+			`it's lisp, don't think too hard but think with prefixes`,
+			`check out the {{"(help)" | cyan}} output`,
+			`how could you combine {{"touch" | cyan}} calls into a single line of code?`,
+			`what does {{"touch" | cyan}} output? Is it the same every time?`,
+			`{{"(print (str 4) (str (+ 1 1)))" | cyan}}`,
+		},
+	}
+}
+
+func (stage *LispStage) Title() string              { return "Speech Impediment" }
+func (stage *LispStage) Man() string                { return stage.man }
+func (stage *LispStage) Help() string               { return stage.usage }
+func (stage *LispStage) Hints() []string            { return stage.hints }
+func (stage *LispStage) Options() map[string]string { return nil }
+
+func (stage *LispStage) Run() error {
 	puzzleEnv := lisp.NewEnv(map[string]any{
 		"help":   help,
 		"look":   look,
 		"touch":  touch,
-		"unlock": unlock(in),
+		"unlock": stage.unlock,
 	})
 
-	if err := util.InstallManpage(in.DB, manPage); err != nil {
-		return err
-	} else if in.HasOpt("help", "h") {
-		return util.ErrorFmt(usage, in.Env.User)
-	} else if in.HasOpt("hint") {
-		return util.DisplayHint(in, hints)
-
-	} else if in.HasPipe {
-		return evalSrc(puzzleEnv, string(in.Stdin))
-	} else if len(in.Args) > 0 {
-		file, err := os.Open(in.Args[0])
+	if stage.in.HasPipe {
+		return evalSrc(puzzleEnv, string(stage.in.Stdin))
+	} else if len(stage.in.Args) > 0 {
+		file, err := os.Open(stage.in.Args[0])
 		if err != nil {
 			return err
 		}
@@ -140,7 +157,7 @@ functionality a few ways.
 {{"unlock"|bold}}: This is your target. This is the function that you need to unlock the
         next stage of the puzzle box. usage: {{"(unlock pinNumber)"|cyan}}
 
-Some other funcs you might want to look at are {{"look"|bold}} and {{"touch"|bold}}`, nil)
+Some other funcs you might want to look at are {{"look"|bold}} and {{"touch"|bold}}`, nil), nil
 }
 
 func look(env map[string]any, args []any) (any, error) {
@@ -207,35 +224,32 @@ func touch(env map[string]any, args []any) (any, error) {
 	return nil, nil
 }
 
-func unlock(in *term.Input) func(map[string]any, []any) (any, error) {
-	return func(env map[string]any, args []any) (any, error) {
-		if lisp.IsDocCall(env, args) {
-			return `unlock will unlock the next stage of the puzzle.`, nil
-		} else if len(args) == 0 {
-			return `cannot unlock without a pin code`, nil
-		} else if len(args) == 1 {
-			val, err := lisp.EvalForm(env, args[0])
-			if err != nil {
-				return nil, err
-			}
-			pin, ok := val.(string)
-			if !ok {
-				pinNm, ok := val.(float64)
-				if !ok {
-					return nil, errors.New("that pin code is indecipherable")
-				}
-				pin = fmt.Sprintf("%v", pinNm)
-			}
-			if pin == pinNumber && touched == 4 {
-				term.Println(`{{"congrats"|bold}}, you have unlocked the next stage!`, nil)
-				util.SetStage(in, "merrygoround")
-			} else if pin == pinNumber && touched != 4 {
-				return nil, errors.New("the pin does nothing without the buttons in place")
-			} else if pin != pinNumber {
-				str, _ := term.Sprintf("{{. | red}} is incorrect", pin)
-				return nil, errors.New(str)
-			}
+func (stage *LispStage) unlock(env map[string]any, args []any) (any, error) {
+	if lisp.IsDocCall(env, args) {
+		return `unlock will unlock the next stage of the puzzle.`, nil
+	} else if len(args) == 0 {
+		return `cannot unlock without a pin code`, nil
+	} else if len(args) == 1 {
+		val, err := lisp.EvalForm(env, args[0])
+		if err != nil {
+			return nil, err
 		}
-		return nil, nil
+		pin, ok := val.(string)
+		if !ok {
+			pinNm, ok := val.(float64)
+			if !ok {
+				return nil, errors.New("that pin code is indecipherable")
+			}
+			pin = fmt.Sprintf("%v", pinNm)
+		}
+		if pin == pinNumber && touched == 4 {
+			term.Println(`{{"congrats"|bold}}, you have unlocked the next stage!`, nil)
+			util.SetStage(stage.in, "merrygoround")
+		} else if pin == pinNumber && touched != 4 {
+			return nil, errors.New("the pin does nothing without the buttons in place")
+		} else if pin != pinNumber {
+			return nil, errors.New(term.Sprintf("{{. | red}} is incorrect", pin))
+		}
 	}
+	return nil, nil
 }
